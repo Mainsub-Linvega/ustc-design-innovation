@@ -1,139 +1,75 @@
 import Link from 'next/link';
 import { PageShell } from '@/components/site-shell';
+import { PortalImage } from '@/components/portal-image';
 import { getCurrentUser } from '@/lib/auth';
-import { getPublicCourses, getPublicCourseNews } from '@/lib/queries';
-import { displayDate } from '@/lib/policy';
-import { getPostImage } from '@/lib/editorial-images';
-import { newsFeatures, stories, type EditorialRecord } from '@/lib/home-editorial';
-import { NewsCardLink, NewsCarousel } from '@/components/news-carousel';
-import { HeroSlideshow } from '@/components/hero-slideshow';
-import { learningPaths } from '@/lib/home-learning';
-import { offeringCourseTitle } from '@/lib/course-label';
+import { getPublicCourses, getPublicProjects } from '@/lib/queries';
+import { getCourseImage, getHomeImage, getPostImage } from '@/lib/editorial-images';
+import { courseKinds } from '@/lib/home-courses';
+import { partners, teachingTeam } from '@/lib/home-people';
 import styles from './portal-home.module.css';
 
 export const dynamic = 'force-dynamic';
 
-function Arrow() {
-  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-}
+const HOME_PROJECTS = 6;
 
-function StoryPreview({ story, featured = false }: { story: EditorialRecord; featured?: boolean }) {
-  return <article className={featured ? styles.storyFeature : styles.storyBrief}>
-    <Link className={styles.storyLink} href={`/stories/${story.slug}`} aria-labelledby={`home-story-${story.slug}`}>
-      <div className={styles.storyCopy}>
-        <p className={styles.storyCategory}>{story.category}{featured && <span>{story.kicker}</span>}</p>
-        <h3 id={`home-story-${story.slug}`}>{featured ? story.title.split('，').map((phrase, index, phrases) => <span key={index}>{phrase}{index < phrases.length - 1 ? '，' : ''}</span>) : story.title}</h3>
-        {featured && <p className={styles.storyExcerpt}>{story.excerpt}</p>}
-      </div>
-      {story.image && <div className={styles.storyPhoto}><img src={story.image.src} alt={story.image.alt} style={{ objectPosition: story.imagePosition }} width={story.image.width} height={story.image.height} loading="lazy"/></div>}
-      <span className={styles.storyRead}>{featured ? '读这段经历' : <span className="sr-only">阅读故事</span>}<Arrow/></span>
-    </Link>
-  </article>;
-}
+export default async function HomePage() {
+  const [user, courses, projects] = await Promise.all([getCurrentUser(), getPublicCourses(), getPublicProjects(HOME_PROJECTS)]);
 
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ news?: string | string[] }> }) {
-  const [user, courses, { news: readArticle }] = await Promise.all([getCurrentUser(), getPublicCourses(), searchParams]);
-  const homeOfferings = courses.flatMap(course => {
-    const current = course.offerings.filter(offering => offering.status === 'ACTIVE');
-    const selected = current.length ? current : course.offerings.slice(0, 1);
-    return selected.map(offering => ({ ...offering, course }));
-  }).sort((a, b) => Number(b.status === 'ACTIVE') - Number(a.status === 'ACTIVE') || b.term.startDate.getTime() - a.term.startDate.getTime());
-  const displayedCourseIds = [...new Set(homeOfferings.map(offering => offering.courseId))];
-  const news = await getPublicCourseNews(displayedCourseIds);
-  const newsCards = [
-    ...news.map(post => ({ slug: post.slug, category: '课程新闻', title: post.title, image: getPostImage(post.slug), href: `/news/${post.slug}`, date: post.publishedAt ? displayDate(post.publishedAt) : null })),
-    ...newsFeatures.map(post => ({ ...post, href: `/updates/${post.slug}`, date: null as string | null })),
-  ];
-  const returnIndex = readArticle === undefined ? undefined : newsCards.findIndex(card => card.href === readArticle);
-
-  return <PageShell currentUser={user} homeLayout>
-    <HeroSlideshow/>
-
-    <section id="learning" className={styles.learningSection} aria-labelledby="learning-title">
-      <h2 id="learning-title" className="sr-only">我们的学习方式：交流、实践、合作</h2>
-      <div className={styles.learningChapters}>
-        {learningPaths.map(path => <article id={`learning-${path.id}`} className={styles.learningPath} key={path.id} aria-labelledby={`learning-${path.id}-title`}>
-          <div className={styles.learningLead}>
-            <h3 id={`learning-${path.id}-title`}>{path.title}</h3>
-          </div>
-          <div className={styles.learningPhoto}><img src={path.image.src} alt={path.image.alt} width={path.image.width} height={path.image.height} loading="lazy"/></div>
-          <p className={styles.learningIntroduction}>{path.description}</p>
-          <div className={styles.learningTopics}>
-            {path.topics.map(topic => <div className={styles.learningTopic} key={topic.title}>
-              <h4>{topic.title}</h4>
-              <p>{topic.description}</p>
-              {topic.link && <Link className={styles.learningRead} href={topic.link.href}>{topic.link.label}<Arrow/></Link>}
-            </div>)}
-          </div>
-        </article>)}
-      </div>
-      <p className={styles.learningNote}>图片为学习场景示意。</p>
+  return <PageShell currentUser={user}>
+    <section className={styles.hero} aria-labelledby="home-title">
+      <h1 id="home-title"><span>让更多人，</span><span><span className={styles.phrase}>拥有塑造未来</span><span className={styles.phrase}>的能力。</span></span></h1>
+      <p className={styles.lead}>中国科学技术大学的设计创新课程。理实交融，从一个真实的问题做到一个可以检验的原型。</p>
+      <PortalImage image={getHomeImage()} ratio="21 / 9" priority/>
     </section>
 
-    <section id="partners" className={styles.partnersSection} aria-labelledby="partners-title">
-      <div className={styles.partnersHeading}>
-        <h2 id="partners-title">合作与交流</h2>
-        <a href="https://sugar-network.org/network/" target="_blank" rel="noreferrer">SUGAR 全球网络 ↗</a>
-      </div>
-      <div className={styles.partnerNames}>
-        <a className={styles.stanfordName} href="https://www.stanford.edu/" target="_blank" rel="noreferrer" aria-label="Stanford University，打开官方网站">Stanford<span>University</span></a>
-        <a className={styles.sugarName} href="https://sugar-network.org/" target="_blank" rel="noreferrer" aria-label="SUGAR Network，打开官方网站">SUGAR<span>Design Innovation Network</span></a>
-        <a className={styles.aaltoName} href="https://designfactory.aalto.fi/" target="_blank" rel="noreferrer" aria-label="Aalto Design Factory，打开官方网站">Aalto<span>Design Factory</span></a>
-        <a className={styles.tongjiName} href="https://tjdi.tongji.edu.cn/" target="_blank" rel="noreferrer" aria-label="同济大学设计创意学院，打开官方网站">同济大学<span>设计创意学院</span></a>
-        <a className={styles.kyotoName} href="https://www.d-lab.kit.ac.jp/program-me310sugar/" target="_blank" rel="noreferrer" aria-label="Kyoto Institute of Technology，打开官方网站">KYOTO<span>Institute of Technology</span></a>
-      </div>
-      <p className={styles.partnersFootnote}>合作网络展示样稿</p>
-    </section>
-
-    <section id="news" className={styles.newsSection} aria-labelledby="news-title">
-      {newsCards.length ? <NewsCarousel returnIndex={returnIndex}>
-        {newsCards.map(post => <article className={styles.newsCard} key={post.href}>
-          <NewsCardLink href={post.href}>
-            <div className={`${styles.newsVisual} ${!post.image ? styles.newsPoster : ''}`}>
-              {post.image ? <img src={post.image.src} alt={post.image.alt} width={post.image.width} height={post.image.height} loading="lazy"/> : <div className={styles.posterType} aria-hidden="true"><span>DESIGN<br/>INNOVATION</span><span>新的学期<br/>新的探索。</span></div>}
-              <span className={styles.cardCategory}>{post.category}</span>
-            </div>
-            <div className={styles.newsCardBody}>
-              {post.date && <div className={styles.cardMeta}><span>{post.date}</span></div>}
-              <h3>{post.title}</h3>
-              <span className={styles.newsRead}><span className="sr-only">阅读新闻</span><Arrow/></span>
-            </div>
-          </NewsCardLink>
-        </article>)}
-      </NewsCarousel> : <><div className={styles.newsHeading}><h2 id="news-title">新闻</h2></div><p className="empty-state">暂无已发布新闻。</p></>}
-    </section>
-
-    <section id="stories" className={styles.storiesSection} aria-labelledby="stories-title">
-      <div className={styles.storiesLayout}>
-        <div className={styles.storiesHeading}>
-          <h2 id="stories-title">故事</h2>
-          <p className={styles.storiesIntroduction}>记录课程中的人物经历、项目过程与设计思考。</p>
-          {stories.length > 0 && <Link className={styles.allStoriesLink} href="/stories">查看全部故事<Arrow/></Link>}
-        </div>
-        <div className={styles.storiesReading}>
-          {stories[1] && <StoryPreview story={stories[1]} featured/>}
-          <div className={styles.moreStories}>
-            {stories[0] && <StoryPreview story={stories[0]}/>}
-            {stories[2] && <StoryPreview story={stories[2]}/>}
-          </div>
-          {!stories.length && <p className="empty-state">暂无已发布故事。</p>}
-        </div>
+    <section className={styles.block} aria-labelledby="courses-title">
+      <h2 id="courses-title">两门课</h2>
+      <div className={styles.courses}>
+        {courseKinds.map(kind => {
+          const offerings = courses.find(course => course.slug === kind.slug)?.offerings ?? [];
+          // The running term first; otherwise the most recent public one.
+          const offering = offerings.find(item => item.status === 'ACTIVE') ?? offerings[0];
+          const body = <>
+            <PortalImage image={getCourseImage(kind.slug)} ratio="3 / 2"/>
+            <h3>{kind.title}{kind.parts && <span>{kind.parts}</span>}</h3>
+            <p>{kind.position}</p>
+            <p className={styles.courseTerm}>{offering ? <>{offering.term.name}<span aria-hidden="true"> →</span></> : '本期暂未开课'}</p>
+          </>;
+          return offering
+            ? <Link className={styles.course} href={`/courses/${offering.id}`} key={kind.slug}>{body}</Link>
+            : <div className={styles.course} key={kind.slug}>{body}</div>;
+        })}
       </div>
     </section>
 
-    {homeOfferings.length > 0 && <section id="courses" className={`container ${styles.courseSection}`} aria-labelledby="course-title">
-      <div className={styles.courseLayout}>
-        <div className={styles.courseIntro}><h2 id="course-title">课程与学期</h2><Link className={styles.inlineLink} href="/courses">查看课程目录<Arrow/></Link></div>
-        <div className={styles.courseContent}>
-          {homeOfferings.map(offering => <Link className={styles.semester} href={`/courses/${offering.id}`} key={offering.id}>
-            <div>
-              <h3 className={styles.semesterName}>{offeringCourseTitle(offering)}</h3>
-              <p className={styles.semesterDates}><span>{offering.term.name}</span><span>{displayDate(offering.term.startDate)} — {displayDate(offering.term.endDate)}</span></p>
-            </div>
-            <span className={styles.semesterState}>{offering.status === 'ACTIVE' ? '进行中' : '已归档'}</span><Arrow/>
-          </Link>)}
-        </div>
+    {projects.length > 0 && <section className={`${styles.block} ${styles.band}`} aria-labelledby="projects-title">
+      <div className={styles.blockHead}>
+        <h2 id="projects-title">往届项目</h2>
+        <Link href="/projects">全部项目<span aria-hidden="true"> →</span></Link>
       </div>
+      <ul className={styles.projects}>
+        {projects.map(project => <li key={project.slug}>
+          <Link href={`/news/${project.slug}`}>
+            <PortalImage image={getPostImage(project.slug)} ratio="4 / 3"/>
+            <h3>{project.title}</h3>
+            <p>{[project.offering?.term.name, project.coverLabel].filter(Boolean).join(' · ')}</p>
+          </Link>
+        </li>)}
+      </ul>
     </section>}
+
+    <section className={styles.block} aria-labelledby="partners-title">
+      <h2 id="partners-title">{teachingTeam.length ? '合作与团队' : '合作'}</h2>
+      <ul className={styles.partners}>
+        {partners.map(partner => <li key={partner.name}><a href={partner.href} target="_blank" rel="noreferrer">{partner.name}</a></li>)}
+      </ul>
+      {teachingTeam.length > 0 && <ul className={styles.team}>
+        {teachingTeam.map(member => <li key={member.name}>
+          <span>{member.href ? <a href={member.href} target="_blank" rel="noreferrer">{member.name}</a> : member.name}</span>
+          <span>{member.role}</span>
+        </li>)}
+      </ul>}
+      <p className={styles.note}>合作信息为样稿，以教学团队的正式材料为准。</p>
+    </section>
   </PageShell>;
 }

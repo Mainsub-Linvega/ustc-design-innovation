@@ -12,7 +12,7 @@ export const metadata = {
 export default async function StoriesPage() {
   const user = await getCurrentUser();
   return <PageShell currentUser={user}><div className={styles.page}>
-    <Link className={styles.back} href="/#stories">← 返回首页故事</Link>
+    <Link className={styles.back} href="/">← 返回首页</Link>
     <header className={styles.header}>
       <h1>故事</h1>
       <p>记录课程中的人物经历、项目过程与设计思考。</p>

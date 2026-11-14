@@ -18,12 +18,12 @@ const postImages: Record<string, EditorialImage> = {
 
 export function getPostImage(slug: string): EditorialImage | undefined { return postImages[slug]; }
 
-export function getCourseImage(slug: string): EditorialImage | undefined {
-  if (slug !== 'design-thinking') return undefined;
-  return {
-    src: '/images/portal/studio-hero.jpg',
-    alt: '工作台前的模型制作过程',
-    caption: '模型制作场景示意 · Ron Lach / Pexels',
-    width: 2400, height: 1600,
-  };
-}
+// Real photographs are bound here once they may be published. Until then the
+// portal shows a plain placeholder instead of stock pictures.
+const courseImages: Record<string, EditorialImage> = {};
+const homeImage: EditorialImage | undefined = undefined;
+
+export function getCourseImage(slug: string): EditorialImage | undefined { return courseImages[slug]; }
+
+/** The single wide picture under the homepage headline. */
+export function getHomeImage(): EditorialImage | undefined { return homeImage; }

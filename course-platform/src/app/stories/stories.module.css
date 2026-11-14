@@ -45,3 +45,7 @@
   .image img { transition: none; }
   .card:hover .image img { transform: none; }
 }
+/* Public portal style: serif titles, square pictures, no rule above the list. */
+.header h1, .copy h2 { font-family: var(--display); letter-spacing: 0; }
+.sectionMeta { border-top: 0; padding-top: 0; }
+.image { border-radius: 0; }

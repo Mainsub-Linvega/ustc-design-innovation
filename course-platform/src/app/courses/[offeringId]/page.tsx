@@ -9,6 +9,7 @@ import { PageShell } from '@/components/site-shell';
 import { CourseWorkspace } from '@/components/course-workspace';
 import { offeringCourseTitle } from '@/lib/course-label';
 import { getPublicOfferingNews } from '@/lib/queries';
+import { getCourseKind } from '@/lib/home-courses';
 
 export default async function OfferingPage({ params, searchParams }: {
   params: Promise<{ offeringId: string }>;
@@ -32,9 +33,10 @@ export default async function OfferingPage({ params, searchParams }: {
   const termDescription = generalDescription && generalDescription !== offeringDescription ? offeringDescription : '';
   const isArchived = offering.status === 'ARCHIVED';
   const coursePath = `/courses/${encodeURIComponent(offeringId)}`;
+  const courseKind = getCourseKind(offering.course.slug);
   const courseLoginPath = loginPath(coursePath);
   return <PageShell currentUser={user} context="public">
-    <header className={styles.offeringHeading}><div className="container"><Link className={styles.offeringBack} href="/courses">← 课程目录</Link><h1>{offeringCourseTitle(offering)}</h1><p>{offering.term.name}</p></div></header>
+    <header className={styles.offeringHeading}><div className="container"><Link className={styles.offeringBack} href="/courses">← 课程目录</Link><h1>{offeringCourseTitle(offering)}</h1><p>{offering.term.name}</p>{courseKind && <p className={styles.offeringPosition}>{courseKind.position}</p>}</div></header>
     <div className={`container ${styles.offeringBody}`}><div className={styles.offeringLayout}>
       <div>
         <section className={styles.offeringIntroduction}><h2>课程介绍</h2><p>{courseDescription || '课程介绍待补充。'}</p></section>

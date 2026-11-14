@@ -27,6 +27,15 @@ export function getPublicCourseNews(courseIds: readonly string[]) {
   });
 }
 
+/** Every public news report, newest first, for the news index. */
+export function getPublicNews() {
+  return db.post.findMany({
+    where: { ...publishedWhere, publishedAt: { lte: new Date() }, type: 'NEWS' },
+    select: { slug: true, title: true, excerpt: true, publishedAt: true },
+    orderBy: [{ publishedAt: 'desc' }, { id: 'asc' }],
+  });
+}
+
 export function getPublicOfferingNews(offeringId: string) {
   return db.post.findMany({
     where: {
@@ -53,6 +62,22 @@ export async function getPublishedPost(slug: string) {
     },
   });
   return post ? { ...post, category: post.type } : null;
+}
+
+/** Public project records, newest first, with the term they belong to when that offering is public. */
+export function getPublicProjects(take?: number) {
+  return db.post.findMany({
+    where: { ...publishedWhere, publishedAt: { lte: new Date() }, type: 'PROJECT' },
+    select: {
+      slug: true, title: true, excerpt: true, coverLabel: true, publishedAt: true,
+      offering: {
+        where: { status: { in: ['ACTIVE', 'ARCHIVED'] } },
+        select: { id: true, title: true, term: { select: { name: true } }, course: { select: { slug: true, title: true } } },
+      },
+    },
+    orderBy: [{ publishedAt: 'desc' }, { id: 'asc' }],
+    take,
+  });
 }
 
 export function getPublicCourses() {

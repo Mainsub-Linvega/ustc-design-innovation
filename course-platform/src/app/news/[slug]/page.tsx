@@ -25,11 +25,11 @@ export default async function PostPage({ params, searchParams }: {
     : null;
   const continueExploring = post.category === 'PROJECT' && <section className={styles.continue} aria-labelledby="continue-exploring-title">
     <h2 id="continue-exploring-title">继续探索</h2>
-    <nav aria-label="继续探索"><Link href="/">返回首页 →</Link><Link href={offering ? `/courses/${offering.id}` : '/courses'}>{offering ? '查看所属学期公开信息' : '查看课程公开信息'} →</Link></nav>
+    <nav aria-label="继续探索"><Link href="/projects">全部项目 →</Link><Link href={offering ? `/courses/${offering.id}` : '/courses'}>{offering ? '查看所属学期公开信息' : '查看课程公开信息'} →</Link></nav>
   </section>;
   if (demo) {
     return <PageShell currentUser={user}><article className={`container ${styles.project}`} data-project-demo={post.slug}>
-      <Link className={styles.back} href="/">← 返回首页</Link>
+      <Link className={styles.back} href="/projects">← 全部项目</Link>
       <header className={styles.header}>
         <p className={styles.eyebrow}>项目示例 · 非真实学生记录</p>
         <h1>{post.title}</h1>
@@ -57,7 +57,7 @@ export default async function PostPage({ params, searchParams }: {
     </article></PageShell>;
   }
   return <PageShell currentUser={user}><article className="container section article-page">
-    <Link className="breadcrumb" href={backToCourse ?? (post.category === 'PROJECT' ? '/' : { pathname: '/', query: { news: `/news/${post.slug}` }, hash: 'news' })}>← {backToCourse ? '返回开课信息' : post.category === 'PROJECT' ? '返回首页' : '返回新闻'}</Link>
+    <Link className="breadcrumb" href={backToCourse ?? (post.category === 'PROJECT' ? '/projects' : '/news')}>← {backToCourse ? '返回开课信息' : post.category === 'PROJECT' ? '全部项目' : '返回新闻'}</Link>
     <header className="article-header">
       <p className="muted">{post.category === 'PROJECT' ? '项目专题' : '课程新闻'}{offering && <> · {post.category === 'NEWS' ? <Link href={`/courses/${offering.id}`}>{offering.title}</Link> : offering.title}</>}</p>
       <h1>{post.title}</h1>

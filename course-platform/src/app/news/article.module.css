@@ -63,3 +63,6 @@
   .continue h2 { font-size: 18px; }
   .continue nav { align-items: flex-start; flex-direction: column; gap: 4px; }
 }
+/* Public portal style: serif titles. */
+.header h1 { font-weight: 600; }
+.reading h2, .steps h3 { font-family: var(--display); font-weight: 600; }
