@@ -18,7 +18,7 @@ export default async function UpdatePage({ params }: { params: Promise<{ slug: s
   const user = await getCurrentUser();
 
   return <PageShell currentUser={user}><article className={styles.record}>
-    <Link className={styles.back} href={{ pathname: '/', query: { news: `/updates/${update.slug}` }, hash: 'news' }}>← 返回新闻</Link>
+    <Link className={styles.back} href="/news">← 返回新闻</Link>
     <header className={styles.header}>
       <p className={styles.meta}><span>{update.category}</span><span>{update.kicker}</span><span>展示样稿</span></p>
       <h1>{update.title}</h1>
@@ -29,7 +29,7 @@ export default async function UpdatePage({ params }: { params: Promise<{ slug: s
       <p className={styles.note}>新闻展示样稿：下文为虚构活动报道，图片仅作场景示意。</p>
       {update.sections.map(section => <section className={styles.section} key={section.title}><h2>{section.title}</h2><p>{section.body}</p></section>)}
       <p className={styles.takeaway}>{update.takeaway}</p>
-      <nav className={styles.continue} aria-label="继续浏览"><Link href="/#news">更多新闻 ↗</Link><Link href="/#stories">阅读故事 →</Link><Link href="/courses">了解课程与学期 →</Link></nav>
+      <nav className={styles.continue} aria-label="继续浏览"><Link href="/news">更多新闻 →</Link><Link href="/stories">阅读故事 →</Link><Link href="/courses">了解课程与学期 →</Link></nav>
     </div>
   </article></PageShell>;
 }

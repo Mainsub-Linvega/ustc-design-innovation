@@ -31,7 +31,7 @@ export default async function StoryPage({ params }: { params: Promise<{ slug: st
       <p className={styles.note}>故事展示样稿：下文为虚构叙事，用于展示人物经历与项目过程；图片仅作场景示意。</p>
       {story.sections.map(section => <section className={styles.section} key={section.title}><h2>{section.title}</h2><p>{section.body}</p></section>)}
       <p className={styles.takeaway}>{story.takeaway}</p>
-      <nav className={styles.continue} aria-label="继续浏览"><Link href="/#stories">返回首页故事 ↗</Link><Link href="/courses">了解课程与学期 →</Link></nav>
+      <nav className={styles.continue} aria-label="继续浏览"><Link href="/stories">全部故事 →</Link><Link href="/courses">了解课程与学期 →</Link></nav>
     </div>
     {next && <aside className={styles.next}><p>下一篇 · {next.category}</p><Link href={`/stories/${next.slug}`}>{next.title}<span aria-hidden="true">→</span></Link></aside>}
   </article></PageShell>;

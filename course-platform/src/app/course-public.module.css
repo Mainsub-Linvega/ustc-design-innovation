@@ -48,3 +48,12 @@
 @media(max-width:620px) { .offeringReports a { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
 @media(max-width:800px){.offeringLayout{gap:30px;grid-template-columns:minmax(0,1.6fr) minmax(220px,1fr)}.offeringSidebar{padding-left:22px}}
 @media(max-width:620px){.catalogHeading,.offeringHeading{padding-block:28px 26px}.catalogBody{padding-top:4px}.catalogEntry{grid-template-columns:minmax(0,1fr);gap:20px;padding-block:24px}.catalogEntry h2{font-size:25px}.entryAction{min-height:36px;gap:16px}.catalogArchive{margin-top:28px}.historicalEntry h2{font-size:19px}.offeringLayout{grid-template-columns:1fr;gap:28px}.offeringSidebar{padding:24px 0 0;border-left:0;border-top:1px solid var(--line)}.offeringBody{padding-top:0}}
+/* Public portal style: serif titles; entries are set apart by space instead of rules. Sizes above stay as they are. */
+.offeringHeading .offeringPosition{max-width:36em;margin-top:14px;font-size:16px;line-height:1.85;color:var(--ink)}
+.catalogEntries,.catalogEntry{border:0}
+.catalogEntry{padding-block:26px}
+.catalogEntry h2,.offeringReports h2{font-family:var(--display)}
+.offeringNotes,.offeringReports{border-top:0}
+.offeringReports li+li{border-top:0}
+.offeringSidebar{border-left:0;padding:28px;background:var(--paper)}
+@media(max-width:620px){.offeringSidebar{border-top:0;padding:24px}}

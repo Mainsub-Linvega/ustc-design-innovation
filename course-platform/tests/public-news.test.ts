@@ -2,7 +2,7 @@ import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { db } from '../src/lib/db';
-import { getPublicCourseNews, getPublicOfferingNews, getPublishedPost } from '../src/lib/queries';
+import { getPublicCourseNews, getPublicOfferingNews, getPublicProjects, getPublishedPost } from '../src/lib/queries';
 
 assert.match(new URL(process.env.DATABASE_URL ?? 'postgresql://invalid/').pathname, /^\/design_test_[a-f\d]+$/);
 after(async () => { await db.$disconnect(); });
@@ -152,4 +152,35 @@ test('开课报道按每次请求的发布时间、开课状态和撤回结果�
   assert.deepEqual(await getPublicOfferingNews(offering.id), []);
   await db.post.update({ where: { id: post.id }, data: { status: 'PUBLISHED' } });
   assert.deepEqual(await getPublicOfferingNews(offering.id), expected);
+});
+
+test('项目归档只列已公开的项目记录，筹备中的开课不随项目带出', async () => {
+  const key = randomUUID();
+  const author = await db.user.create({ data: { name: '项目作者', email: `${key}@test.invalid` } });
+  const course = await db.course.create({ data: { slug: key, title: '项目测试课程' } });
+  // One offering per course and term, so each status gets its own term.
+  const [term, nextTerm] = await Promise.all([['2031 春', '2031-02-01'], ['2031 秋', '2031-09-01']].map(([name, start]) => db.term.create({ data: {
+    slug: `${key}-${start}`, name, startDate: new Date(start), endDate: new Date(new Date(start).getTime() + 120 * 86400000),
+  } })));
+  const archived = await db.courseOffering.create({ data: { title: '项目测试开课 · 已归档', status: 'ARCHIVED', courseId: course.id, termId: term.id } });
+  const draft = await db.courseOffering.create({ data: { title: '项目测试开课 · 筹备中', status: 'DRAFT', courseId: course.id, termId: nextTerm.id } });
+  const post = (name: string, data: object) => db.post.create({ data: {
+    slug: `${key}-${name}`, title: name, body: '正文', excerpt: '一句话问题', authorId: author.id,
+    type: 'PROJECT', status: 'PUBLISHED', visibility: 'PUBLIC', publishedAt: new Date('2026-03-01'), ...data,
+  } });
+  await post('archived', { offeringId: archived.id, publishedAt: new Date('2026-03-03') });
+  await post('draft-offering', { offeringId: draft.id, publishedAt: new Date('2026-03-02') });
+  await post('unbound', {});
+  await post('news', { type: 'NEWS' });
+  await post('unpublished', { status: 'DRAFT' });
+  await post('members-only', { visibility: 'OFFERING', offeringId: archived.id });
+  await post('future', { publishedAt: new Date('2999-01-01') });
+
+  const mine = (await getPublicProjects()).filter(project => project.slug.startsWith(key));
+  assert.deepEqual(mine.map(project => project.slug), ['archived', 'draft-offering', 'unbound'].map(name => `${key}-${name}`));
+  assert.deepEqual(mine[0].offering, { id: archived.id, title: archived.title, term: { name: term.name }, course: { slug: course.slug, title: course.title } });
+  assert.equal(mine[1].offering, null, '筹备中的开课不能随公开项目带出');
+  assert.equal(mine[2].offering, null);
+  assert.deepEqual(Object.keys(mine[0]).sort(), ['coverLabel', 'excerpt', 'offering', 'publishedAt', 'slug', 'title']);
+  assert.equal((await getPublicProjects(1)).length, 1);
 });

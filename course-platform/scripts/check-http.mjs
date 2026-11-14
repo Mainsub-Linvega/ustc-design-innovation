@@ -88,7 +88,7 @@ function checkPublicPage(html, path, entryLabel) {
 }
 
 async function checkPublicEntries(publicHome, studentCookie) {
-  const paths = ['/', '/stories'];
+  const paths = ['/', '/stories', '/projects', '/news'];
   const news = linksIn(publicHome).find(link => /^\/news\/[^/?#]+$/.test(link.href));
   if (news) paths.push(news.href);
   else skipped.push('首页无已发布课程新闻，未覆盖新闻详情的身份入口');

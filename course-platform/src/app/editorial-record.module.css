@@ -39,3 +39,6 @@
   .next { margin-top: 36px; padding: 22px; }
   .next a { font-size: 20px; }
 }
+/* Public portal style: serif titles and square pictures. */
+.header h1, .section h2, .takeaway { font-family: var(--display); letter-spacing: 0; }
+.figure img, .next { border-radius: 0; }
